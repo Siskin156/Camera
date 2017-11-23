@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         String[] permissions = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
         List<String> mPermissionList = new ArrayList<>();
         mPermissionList.clear();
-
+//5465465465456
 
         for (int i = 0; i < permissions.length; i++) {
             if (ContextCompat.checkSelfPermission(this, permissions[i]) != PackageManager.PERMISSION_GRANTED) {
