@@ -1,0 +1,80 @@
+apply plugin: 'com.android.library'
+
+def ver = '0.12.0'
+
+def isSnapshot(version) {
+    return version.contains('-Snapshot') || System.getenv('CIRCLE_TAG') == null || System.getenv('CIRCLE_TAG').length() == 0
+}
+
+group = 'com.wonderkiln'
+version = ver
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion '27.0.0'
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 27
+        versionName ver
+    }
+    lintOptions {
+        abortOnError false
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    sourceSets {
+        main.java.srcDirs += 'src/main/base'
+        main.java.srcDirs += 'src/main/api16'
+        main.java.srcDirs += 'src/main/api21'
+        main.java.srcDirs += 'src/main/types'
+        main.java.srcDirs += 'src/main/events'
+        main.java.srcDirs += 'src/main/utils'
+    }
+    externalNativeBuild {
+        cmake {
+            path 'src/main/cpp/CMakeLists.txt'
+        }
+    }
+}
+
+dependencies {
+    compile 'com.android.support:appcompat-v7:27.0.0'
+    compile 'com.android.support:exifinterface:27.0.0'
+
+    implementation 'android.arch.lifecycle:runtime:1.0.0'
+    implementation 'android.arch.lifecycle:extensions:1.0.0-beta1'
+    annotationProcessor 'android.arch.lifecycle:compiler:1.0.0-beta1'
+}
+/*
+install {
+    repositories.mavenInstaller {
+        pom.project {
+            name 'CameraKit-Android'
+            packaging 'aar'
+        }
+    }
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    override = isSnapshot(ver)
+    publish = true
+    configurations = ['archives']
+    pkg {
+        repo = isSnapshot(ver) ? 'snapshots' : 'maven'
+        name = 'CameraKit-Android'
+        userOrg = 'wonderkiln'
+        vcsUrl = 'https://github.com/wonderkiln/CameraKit-Android.git'
+        version {
+            name = ver
+            vcsTag = ver
+            released = new Date()
+        }
+    }
+}
+*/

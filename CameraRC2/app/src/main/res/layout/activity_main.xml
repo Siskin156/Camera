@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.siskin.camerarc2.MainActivity"
+
+
+    >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.wonderkiln.camerakit.CameraView
+            android:id="@+id/camera"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+            app:ckCropOutput="false"
+
+
+            android:adjustViewBounds="true"
+            app:ckFlash="off"
+            app:ckFocus="tapWithMarker"
+            app:ckJpegQuality="100"
+            app:ckMethod="standard"
+            app:ckVideoQuality="max720p">
+
+        </com.wonderkiln.camerakit.CameraView>
+
+    </FrameLayout>
+
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:background="#7f7f7f7f"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:splitMotionEvents="false"
+
+
+        >
+
+
+        <ImageView
+            android:id="@+id/holderView"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginTop="8dp"
+             android:adjustViewBounds="true"
+            android:src="@mipmap/ic_launcher"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="@+id/captureButton"/>
+
+
+        <ImageView
+            android:id="@+id/captureButton"
+            android:layout_width="66dp"
+            android:layout_height="66dp"
+            android:src="@drawable/capture_button"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </android.support.constraint.ConstraintLayout>
+
+
+</android.support.constraint.ConstraintLayout>
