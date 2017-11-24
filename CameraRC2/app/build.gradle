@@ -27,9 +27,13 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     compile 'com.android.support:recyclerview-v7:27.0.1'
     compile 'com.android.support:exifinterface:27.0.1'
+
     compile 'com.github.LuckSiege.PictureSelector:picture_library:v2.1.6'
+
+    compile 'com.github.jiang111:CProgressButton:v1.2.7'
     // compile 'com.wonderkiln:camerakit:0.12.0'
     compile project(':camerakit')
-    compile 'com.jakewharton:butterknife:8.6.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
+   // compile 'com.jakewharton:butterknife:8.6.0'
+  //  annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
+
 }

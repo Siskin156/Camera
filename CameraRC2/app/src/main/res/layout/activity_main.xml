@@ -9,6 +9,7 @@
 
     >
 
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -17,18 +18,15 @@
             android:id="@+id/camera"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-
             app:ckCropOutput="false"
-
-
             android:adjustViewBounds="true"
             app:ckFlash="off"
-            app:ckFocus="tapWithMarker"
+            app:ckFocus="tap"
             app:ckJpegQuality="100"
             app:ckMethod="standard"
             app:ckVideoQuality="max720p">
-
         </com.wonderkiln.camerakit.CameraView>
+
 
     </FrameLayout>
 
@@ -42,30 +40,76 @@
 
 
         >
+        <TextView
+            android:id="@+id/videoTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:text="00:10"
 
+            android:visibility="gone"/>
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/captureButton"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:text="轻触拍照，长按录像" />
 
         <ImageView
             android:id="@+id/holderView"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="2dp"
+
+            android:maxWidth="100dp"
+            android:maxHeight="100dp"
             android:layout_marginTop="8dp"
-             android:adjustViewBounds="true"
+            android:adjustViewBounds="true"
             android:src="@mipmap/ic_launcher"
+            android:background="#FFFFFF"
+
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="@+id/captureButton"/>
+            app:layout_constraintRight_toRightOf="@id/captureButton"
+            />
+
+
+
+
+        <com.jiang.android.pbutton.CProgressButton
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+
+            android:gravity="center"
+            app:stroke_width="2dp"
+            app:radius="40dp"
+            app:color="@color/colorAccent"
+            app:drawable_xml="@drawable/bounder"
+            android:textSize="12sp"
+            android:textColor="@color/colorAccent"
+            android:id="@+id/btn"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="gone"
+            />
 
 
         <ImageView
             android:id="@+id/captureButton"
-            android:layout_width="66dp"
-            android:layout_height="66dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:src="@drawable/capture_button"
+            android:adjustViewBounds="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-
             app:layout_constraintTop_toTopOf="parent" />
 
     </android.support.constraint.ConstraintLayout>

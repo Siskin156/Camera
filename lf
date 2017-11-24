@@ -1,0 +1,746 @@
+warning: LF will be replaced by CRLF in CameraRC2/app/src/main/res/drawable/capture_button.xml.
+The file will have its original line endings in your working directory.
+[1mdiff --git a/CameraRC2/app/build.gradle b/CameraRC2/app/build.gradle[m
+[1mindex e8c9b70..d3288d9 100644[m
+[1m--- a/CameraRC2/app/build.gradle[m
+[1m+++ b/CameraRC2/app/build.gradle[m
+[36m@@ -27,9 +27,13 @@[m [mdependencies {[m
+     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'[m
+     compile 'com.android.support:recyclerview-v7:27.0.1'[m
+     compile 'com.android.support:exifinterface:27.0.1'[m
+[32m+[m
+     compile 'com.github.LuckSiege.PictureSelector:picture_library:v2.1.6'[m
+[32m+[m
+[32m+[m[32m    compile 'com.github.jiang111:CProgressButton:v1.2.7'[m
+     // compile 'com.wonderkiln:camerakit:0.12.0'[m
+     compile project(':camerakit')[m
+[31m-    compile 'com.jakewharton:butterknife:8.6.0'[m
+[31m-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'[m
+[32m+[m[32m   // compile 'com.jakewharton:butterknife:8.6.0'[m
+[32m+[m[32m  //  annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'[m
+[32m+[m
+ }[m
+[1mdiff --git a/CameraRC2/app/src/main/java/com/siskin/camerarc2/MainActivity.java b/CameraRC2/app/src/main/java/com/siskin/camerarc2/MainActivity.java[m
+[1mindex f887894..b8455c5 100644[m
+[1m--- a/CameraRC2/app/src/main/java/com/siskin/camerarc2/MainActivity.java[m
+[1m+++ b/CameraRC2/app/src/main/java/com/siskin/camerarc2/MainActivity.java[m
+[36m@@ -1,24 +1,23 @@[m
+ package com.siskin.camerarc2;[m
+ [m
+[31m-import android.Manifest;[m
+[32m+[m
+ import android.annotation.SuppressLint;[m
+ import android.content.Intent;[m
+[31m-import android.content.pm.PackageManager;[m
+ import android.graphics.Bitmap;[m
+ import android.net.Uri;[m
+ import android.os.Environment;[m
+ import android.os.Handler;[m
+ import android.provider.MediaStore;[m
+[31m-import android.support.v4.app.ActivityCompat;[m
+[31m-import android.support.v4.content.ContextCompat;[m
+ import android.support.v7.app.AppCompatActivity;[m
+ import android.os.Bundle;[m
+ import android.view.MotionEvent;[m
+ import android.view.View;[m
+ import android.view.WindowManager;[m
+ import android.widget.ImageView;[m
+[32m+[m[32mimport android.widget.TextView;[m
+ import android.widget.Toast;[m
+ [m
+[32m+[m[32mimport com.jiang.android.pbutton.CProgressButton;[m
+ import com.luck.picture.lib.PictureSelector;[m
+ import com.luck.picture.lib.config.PictureConfig;[m
+ import com.luck.picture.lib.entity.LocalMedia;[m
+[36m@@ -32,7 +31,6 @@[m [mimport com.yalantis.ucrop.UCrop;[m
+ import java.io.File;[m
+ import java.io.FileNotFoundException;[m
+ import java.text.SimpleDateFormat;[m
+[31m-import java.util.ArrayList;[m
+ import java.util.Date;[m
+ import java.util.List;[m
+ [m
+[36m@@ -43,262 +41,290 @@[m [mpublic class MainActivity extends AppCompatActivity {[m
+ [m
+     private CameraView camera;[m
+ [m
+[32m+[m[32m    //圆形进度按钮[m
+[32m+[m[32m    private CProgressButton progressButton;[m
+[32m+[m
+[32m+[m[32m    //拍照录像按钮[m
+     private ImageView captureButton;[m
+[32m+[m
+[32m+[m[32m    //显示照片[m
+     private ImageView holderView;[m
+[31m-    private Handler handler=null;[m
+ [m
+[32m+[m[32m    //录像倒计时[m
+[32m+[m[32m    private TextView videoTextView;[m
+ [m
+[32m+[m[32m    //进度数值[m
+[32m+[m[32m    private float recLen;[m
+[32m+[m[32m    private float progress;[m
+ [m
+[32m+[m
+[32m+[m[32m    private Handler handler = null;[m
+[32m+[m
+[32m+[m[32m    //照片[m
+     private Bitmap bitmap;[m
+ [m
+[32m+[m[32m    //关闭线程；[m
+[32m+[m[32m    private boolean isRun = false;[m
+ [m
+[32m+[m[32m    //是否准备录像[m
+     private boolean pendingVideoCapture;[m
+[32m+[m[32m    //是否开始录像[m
+     private boolean capturingVideo;[m
+[32m+[m[32m    //是否准备拍照[m
+     private boolean isImage;[m
+[32m+[m[32m    //保存选中的图片[m
+     private List<LocalMedia> selectList;[m
+ [m
+[32m+[m[32m    //保存路径[m
+     private File saveFile;[m
+[32m+[m[32m    //更新广播[m
+     private Intent broadcastIntent;[m
+[32m+[m[32m    //保存文件夹[m
+     private File dir;[m
+[32m+[m[32m    //拍照时间[m
+     private String timeStamp;[m
+ [m
+ [m
+ [m
+[31m-    @SuppressLint("ClickableViewAccessibility")[m
+     @Override[m
+     protected void onCreate(Bundle savedInstanceState) {[m
+         super.onCreate(savedInstanceState);[m
+         setContentView(R.layout.activity_main);[m
+ [m
+[31m-[m
+[32m+[m[32m        //全屏无任务标题栏[m
+         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);[m
+ [m
+[32m+[m[32m        handler = new Handler();[m
+[32m+[m[32m        //父目录[m
+[32m+[m[32m        dir = new File(Environment.getExternalStorageDirectory() + "/DCIM/Camera/");[m
+[32m+[m[32m        camera = (CameraView) findViewById(R.id.camera);[m
+[32m+[m[32m        //绑定监听器[m
+[32m+[m[32m        camera.bindCameraKitListener(this);[m
+ [m
+[31m-        String[] permissions = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};[m
+[31m-        List<String> mPermissionList = new ArrayList<>();[m
+[31m-        mPermissionList.clear();[m
+[31m-//5465465465456[m
+ [m
+[31m-        for (int i = 0; i < permissions.length; i++) {[m
+[31m-            if (ContextCompat.checkSelfPermission(this, permissions[i]) != PackageManager.PERMISSION_GRANTED) {[m
+[31m-                mPermissionList.add(permissions[i]);[m
+[31m-            }[m
+[31m-        }[m
+[31m-        if (mPermissionList.isEmpty()) {//未授予的权限为空，表示都授予了[m
+[32m+[m[32m        //圆形进度按钮[m
+[32m+[m[32m        progressButton = (CProgressButton) findViewById(R.id.btn);[m
+[32m+[m[32m        progressButton.startDownLoad(); //you must call startDownload() before download(progress);[m
+ [m
+[31m-        } else {//请求权限方法[m
+[31m-            permissions = mPermissionList.toArray(new String[mPermissionList.size()]);//将List转为数组[m
+[31m-            ActivityCompat.requestPermissions(MainActivity.this, permissions, 1);[m
+[31m-        }[m
+ [m
+[31m-        handler = new Handler();[m
+[31m-        dir=new File(Environment.getExternalStorageDirectory() +"/DCIM/Camera/");[m
+[31m-        camera = (CameraView) findViewById(R.id.camera);[m
+[31m-        camera.bindCameraKitListener(this);[m
+[31m-        camera.performClick();[m
+[32m+[m[32m        //倒计时[m
+[32m+[m[32m        videoTextView = (TextView) findViewById(R.id.videoTextView);[m
+ [m
+[32m+[m[32m        //照片显示[m
+         holderView = (ImageView) findViewById(R.id.holderView);[m
+         holderView.setOnClickListener(new View.OnClickListener() {[m
+             @Override[m
+             public void onClick(View v) {[m
+[32m+[m[32m                //打开选择器[m
+ [m
+                 PictureSelector.create(MainActivity.this)[m
+                         .openGallery(ofAll())//全部.PictureMimeType.ofAll()、图片.ofImage()、视频.ofVideo()[m
+[31m-                       // .theme(R.style.picture_white_style)//主题样式(不设置为默认样式) 也可参考demo values/styles下 例如：R.style.picture_white_style[m
+[31m-[m
+                         .maxSelectNum(9)// 最大图片选择数量 int[m
+[31m-                         .minSelectNum(1)// 最小选择数量 int[m
+[31m-                         .imageSpanCount(4)// 每行显示个数 int[m
+[32m+[m[32m                        .minSelectNum(1)// 最小选择数量 int[m
+[32m+[m[32m                        .imageSpanCount(4)// 每行显示个数 int[m
+                         .selectionMode(2)// 多选 or 单选 PictureConfig.MULTIPLE or PictureConfig.SINGLE[m
+                         .previewImage(true)// 是否可预览图片 true or false[m
+                         .previewVideo(true)// 是否可预览视频 true or false[m
+                         .enablePreviewAudio(true) // 是否可播放音频 true or false[m
+                         .isCamera(false)// 是否显示拍照按钮 true or false[m
+[31m-                        //   .imageFormat(PictureMimeType.PNG)// 拍照保存图片格式后缀,默认jpeg[m
+                         .isZoomAnim(true)// 图片列表点击 缩放效果 默认true[m
+[31m-                        //    .sizeMultiplier(0.5f)// glide 加载图片大小 0~1之间 如设置 .glideOverride()无效[m
+[31m-                        //.setOutputCameraPath("/CustomPath")// 自定义拍照保存路径,可不填[m
+[31m-                        //    .enableCrop(true)// 是否裁剪 true or false[m
+[31m-                        //    .compress(true)// 是否压缩 true or false[m
+[31m-                        //     .glideOverride(200, 200)// int glide 加载宽高，越小图片列表越流畅，但会影响列表图片浏览的清晰度[m
+[31m-                        //   .withAspectRatio(16, 9)// int 裁剪比例 如16:9 3:2 3:4 1:1 可自定义[m
+[31m-                        //    .hideBottomControls(true)// 是否显示uCrop工具栏，默认不显示 true or false[m
+[31m-                        //    .isGif(true)// 是否显示gif图片 true or false[m
+[31m-                        //   .compressSavePath("/CustomPath1")//压缩图片保存地址[m
+[31m-                        //    .freeStyleCropEnabled(true)// 裁剪框是否可拖拽 true or false[m
+[31m-                        //     .circleDimmedLayer(true)// 是否圆形裁剪 true or false[m
+[31m-                        //     .showCropFrame(false)// 是否显示裁剪矩形边框 圆形裁剪时建议设为false   true or false[m
+[31m-                        //     .showCropGrid(false)// 是否显示裁剪矩形网格 圆形裁剪时建议设为false    true or false[m
+[31m-                        //      .openClickSound(true)// 是否开启点击声音 true or false[m
+[31m-                        // .selectionMedia(selectlist)// 是否传入已选图片 List<LocalMedia>[m
+                         .previewEggs(true)// 预览图片时 是否增强左右滑动图片体验(图片滑动一半即可看到上一张是否选中) true or false[m
+                         .cropCompressQuality(90)// 裁剪压缩质量 默认90 int[m
+                         .minimumCompressSize(100)// 小于100kb的图片不压缩[m
+                         .synOrAsy(true)//同步true或异步false 压缩 默认同步[m
+                         .cropWH(1, 1)// 裁剪宽高比，设置如果大于图片本身宽高则无效 int[m
+[31m-                        //     .rotateEnabled(true) // 裁剪是否可旋转图片 true or false[m
+[31m-                        //     .scaleEnabled(true)// 裁剪是否可放大缩小图片 true or false[m
+[31m-                        //  .videoQuality(1)// 视频录制质量 0 or 1 int[m
+[31m-                          .videoMaxSecond(30)// 显示多少秒以内的视频or音频也可适用 int[m
+[31m-                            .videoMinSecond(1)// 显示多少秒以内的视频or音频也可适用 int[m
+[31m-                        //.recordVideoSecond(10)//视频秒数录制 默认60s int[m
+                         .forResult(PictureConfig.CHOOSE_REQUEST);//结果回调onActivityResult code[m
+ [m
+             }[m
+         });[m
+ [m
+         captureButton = (ImageView) findViewById(R.id.captureButton);[m
+[31m-[m
+[32m+[m[32m        //设置单击，长按，弹起事件。[m
+         captureButton.setOnTouchListener(new View.OnTouchListener() {[m
+[31m-            @SuppressLint("ClickableViewAccessibility")[m
+[31m-[m
+             @Override[m
+             public boolean onTouch(View v, MotionEvent event) {[m
+[31m-[m
+[31m-[m
+[31m-[m
+                 switch (event.getAction()) {[m
+                     case MotionEvent.ACTION_DOWN: {[m
+[31m-                        v.performClick();[m
+[31m-                        pendingVideoCapture = true;[m
+[31m-                        isImage=true;[m
+[31m-[m
+[31m-                        handler.postDelayed(new Runnable() {[m
+[31m-                            @Override[m
+[31m-                            public void run() {[m
+[31m-[m
+[31m-[m
+[31m-                                if (pendingVideoCapture) {[m
+[31m-                                    camera.setFocus(CameraKit.Constants.FOCUS_OFF);[m
+[31m-                                    Toast.makeText(MainActivity.this,"录像中",Toast.LENGTH_SHORT).show();[m
+[31m-[m
+[31m-                                    isImage=false;[m
+[31m-                                    capturingVideo = true;[m
+[31m-                                    camera.captureVideo(new CameraKitEventCallback<CameraKitVideo>() {[m
+[31m-                                        @Override[m
+[31m-                                        public void callback(CameraKitVideo event) {[m
+[31m-                                            Toast.makeText(MainActivity.this,"VideoPath:"+event.getVideoFile().toString(),Toast.LENGTH_LONG).show();[m
+[31m-[m
+[31m-                                            broadcastIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,Uri.fromFile(event.getVideoFile()));[m
+[31m-                                            sendBroadcast(broadcastIntent);[m
+[31m-[m
+[31m-[m
+[31m-[m
+[31m-                                        }[m
+[31m-                                    });[m
+[31m-[m
+[31m-[m
+[31m-                                }[m
+[31m-                            }[m
+[31m-                        }, 600);[m
+[31m-[m
+[31m-                          handler.postDelayed(new Runnable() {[m
+[31m-                            @Override[m
+[31m-                            public void run() {[m
+[31m-[m
+[31m-                                if (capturingVideo) {[m
+[31m-                                    pendingVideoCapture = false;[m
+[31m-                                    capturingVideo = false;[m
+[31m-                                    camera.stopVideo();[m
+[31m-                                    camera.setFocus(CameraKit.Constants.FOCUS_TAP_WITH_MARKER);[m
+[31m-[m
+[31m-                                }[m
+[31m-                            }[m
+[31m-                        }, 10600);[m
+[31m-[m
+[32m+[m[32m                        actionDowm();[m
+                         break;[m
+                     }[m
+[31m-[m
+                     case MotionEvent.ACTION_UP: {[m
+[31m-                        v.performClick();[m
+[31m-                        if (capturingVideo) {[m
+[31m-                            pendingVideoCapture = false;[m
+[31m-                            capturingVideo = false;[m
+[31m-                            camera.stopVideo();[m
+[31m-                            camera.setFocus(CameraKit.Constants.FOCUS_TAP_WITH_MARKER);[m
+[31m-[m
+[31m-                        }else if(isImage){[m
+[31m-                            pendingVideoCapture = false;[m
+[31m-                            camera.setFocus(CameraKit.Constants.FOCUS_TAP_WITH_MARKER);[m
+[31m-[m
+[31m-                            camera.captureImage(new CameraKitEventCallback<CameraKitImage>() {[m
+[31m-                                @Override[m
+[31m-                                public void callback(final CameraKitImage events) {[m
+[31m-[m
+[31m-[m
+[31m-                                    new Thread() {[m
+[31m-                                        public void run() {[m
+[31m-[m
+[31m-                                            bitmap = events.getBitmap();[m
+[31m-                                            timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());[m
+[31m-                                            if (!dir.exists()) {[m
+[31m-                                                dir.mkdir();[m
+[31m-                                            }[m
+[31m-[m
+[31m-                                           /*[m
+[31m-                                            saveFile = new File(Environment.getExternalStorageDirectory() + "/DCIM/Camera/", timeStamp + ".jpg");[m
+[31m-[m
+[31m-                                            FileOutputStream fOut = null;[m
+[31m-                                            try {[m
+[31m-                                                fOut = new FileOutputStream(saveFile);[m
+[31m-                                                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fOut);[m
+[31m-                                            } catch (IOException e) {[m
+[31m-                                                e.printStackTrace();[m
+[31m-                                            }[m
+[31m-                                            try {[m
+[31m-                                                fOut.flush();[m
+[31m-                                                fOut.close();[m
+[31m-                                            } catch (IOException e) {[m
+[31m-                                                e.printStackTrace();[m
+[31m-                                            }[m
+[31m-[m
+[31m-                                            //更新相册[m
+[31m-[m
+[31m-                                            Uri uri = Uri.fromFile(saveFile);[m
+[31m-                                            try {[m
+[31m-                                                MediaStore.Images.Media.insertImage(getContentResolver(),[m
+[31m-                                                        saveFile.getAbsolutePath(), timeStamp + ".jpg", null);[m
+[31m-                                            } catch (FileNotFoundException e) {[m
+[31m-                                                e.printStackTrace();[m
+[31m-                                            }[m
+[31m-                                            */[m
+[31m-                                            Uri originUri = Uri.parse(MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, null,null));[m
+[31m-                                            saveFile = new File(Environment.getExternalStorageDirectory() + "/DCIM/Camera/", timeStamp + ".jpg");[m
+[31m-                                            Uri  destinationUri = Uri.fromFile(saveFile);[m
+[31m-                                            UCrop.of(originUri,destinationUri)[m
+[31m-                                                    .withAspectRatio(16, 9)[m
+[31m-                                                    .withMaxResultSize([m
+[31m-                                                            5000, 5000)[m
+[31m-                                                    .start(MainActivity.this,UCrop.REQUEST_CROP);[m
+[31m-                                          //  handler.post(runnableUi);[m
+[31m-                                        }[m
+[31m-                                    }.start();[m
+[31m-[m
+[31m-[m
+[31m-                                }[m
+[31m-                            });[m
+[31m-                            }[m
+[31m-[m
+[31m-[m
+[31m-                        break;[m
+[32m+[m[32m                        actionUP();[m
+                     }[m
+[32m+[m[32m                    break;[m
+                 }[m
+                 return true;[m
+             }[m
+         });[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    //拍照按钮按下事件[m
+[32m+[m[32m    private void actionDowm() {[m
+[32m+[m[32m        //可以执行录像或拍照[m
+[32m+[m[32m        pendingVideoCapture = true;[m
+[32m+[m[32m        isImage = true;[m
+[32m+[m
+[32m+[m[32m        //按下延迟0.6s进行录像[m
+[32m+[m[32m        handler.postDelayed(new Runnable() {[m
+[32m+[m[32m            @Override[m
+[32m+[m[32m            public void run() {[m
+[32m+[m[32m                //如果可以执行录像则录像[m
+[32m+[m[32m                if (pendingVideoCapture) {[m
+[32m+[m[32m                    camera.setFocus(CameraKit.Constants.FOCUS_OFF);[m
+[32m+[m[32m                    //Toast.makeText(MainActivity.this, "录像中", Toast.LENGTH_SHORT).show();[m
+[32m+[m[32m                    videoTextView.setVisibility(View.VISIBLE);[m
+[32m+[m[32m                    captureButton.setVisibility(View.INVISIBLE);[m
+[32m+[m[32m                    progressButton.setVisibility(View.VISIBLE);[m
+[32m+[m[32m                    //设置圆形按钮进度[m
+[32m+[m[32m                    progressButton.startDownLoad(); //you must call startDownload() before download(progress);[m
+[32m+[m
+[32m+[m
+[32m+[m[32m                    //设置倒计时和圆形进度[m
+[32m+[m[32m                    recLen = 11;[m
+[32m+[m[32m                    progress = 0;[m
+[32m+[m[32m                    //可以执行倒计时[m
+[32m+[m[32m                    isRun = true;[m
+[32m+[m
+[32m+[m[32m                    //更新倒计时UI[m
+[32m+[m[32m                    handler.post(runnableUi);[m
+[32m+[m
+[32m+[m[32m                    //进行录像则弹起时不触发拍照事件[m
+[32m+[m[32m                    isImage = false;[m
+[32m+[m[32m                    //正在录像[m
+[32m+[m[32m                    capturingVideo = true;[m
+[32m+[m[32m                    //录像结束后的回调[m
+[32m+[m[32m                    camera.captureVideo(new CameraKitEventCallback<CameraKitVideo>() {[m
+[32m+[m[32m                        @Override[m
+[32m+[m[32m                        public void callback(CameraKitVideo event) {[m
+[32m+[m[32m                            Toast.makeText(MainActivity.this, "VideoPath:" + event.getVideoFile().toString(), Toast.LENGTH_LONG).show();[m
+[32m+[m[32m                            broadcastIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(event.getVideoFile()));[m
+[32m+[m[32m                            sendBroadcast(broadcastIntent);[m
+[32m+[m[32m                        }[m
+[32m+[m[32m                    });[m
+[32m+[m[32m                }[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }, 600);[m
+ [m
+[32m+[m[32m        //延迟11.6s结束录像[m
+[32m+[m[32m        handler.postDelayed(stopVideoRunnable, 11600);[m
+     }[m
+[31m-/*[m
+[31m-    Runnable   runnableUi=new  Runnable(){[m
+[32m+[m
+[32m+[m[32m    //拍照按钮弹起事件[m
+[32m+[m[32m    private void actionUP() {[m
+[32m+[m[32m        //如果进行了录像[m
+[32m+[m[32m        if (capturingVideo) {[m
+[32m+[m[32m            //取消录像准备[m
+[32m+[m[32m            pendingVideoCapture = false;[m
+[32m+[m[32m            //录像设为结束[m
+[32m+[m[32m            capturingVideo = false;[m
+[32m+[m[32m            videoTextView.setVisibility(View.GONE);[m
+[32m+[m[32m            captureButton.setVisibility(View.VISIBLE);[m
+[32m+[m[32m            progressButton.setVisibility(View.GONE);[m
+[32m+[m[32m            //取消更新倒计时ui[m
+[32m+[m[32m            isRun = false;[m
+[32m+[m[32m            handler.post(runnableUi);[m
+[32m+[m[32m            //移除或许还在运行的延迟停止录像进程[m
+[32m+[m[32m            handler.removeCallbacks(stopVideoRunnable);[m
+[32m+[m[32m            //停止录像[m
+[32m+[m[32m            camera.stopVideo();[m
+[32m+[m[32m            //设置对焦[m
+[32m+[m[32m            camera.setFocus(CameraKit.Constants.FOCUS_TAP);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        //如果没进行录像，则触发拍照事件[m
+[32m+[m[32m        else if (isImage) {[m
+[32m+[m[32m            //取消允许录像[m
+[32m+[m[32m            pendingVideoCapture = false;[m
+[32m+[m[32m            //设置对焦方式[m
+[32m+[m[32m            camera.setFocus(CameraKit.Constants.FOCUS_TAP);[m
+[32m+[m[32m            //拍照回调[m
+[32m+[m[32m            camera.captureImage(new CameraKitEventCallback<CameraKitImage>() {[m
+[32m+[m[32m                @Override[m
+[32m+[m[32m                public void callback(final CameraKitImage events) {[m
+[32m+[m[32m                    new Thread() {[m
+[32m+[m[32m                        public void run() {[m
+[32m+[m[32m                            //获取照片[m
+[32m+[m[32m                            bitmap = events.getBitmap();[m
+[32m+[m[32m                            //获取拍照事件[m
+[32m+[m[32m                            timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());[m
+[32m+[m[32m                            //父目录如果不存在则创建[m
+[32m+[m[32m                            if (!dir.exists()) {[m
+[32m+[m[32m                                dir.mkdir();[m
+[32m+[m[32m                            }[m
+[32m+[m[32m                            //设置拍照获得源URI[m
+[32m+[m[32m                            Uri originUri = Uri.parse(MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, null, null));[m
+[32m+[m[32m                            //设置保存路径[m
+[32m+[m[32m                            saveFile = new File(Environment.getExternalStorageDirectory() + "/DCIM/Camera/", timeStamp + ".jpg");[m
+[32m+[m[32m                            //获得保存路径的URI[m
+[32m+[m[32m                            Uri destinationUri = Uri.fromFile(saveFile);[m
+[32m+[m[32m                            //剪裁照片，如果保存则保存在destinationUri[m
+[32m+[m[32m                            UCrop.of(originUri, destinationUri)[m
+[32m+[m[32m                                    .withAspectRatio(16, 9) //16:9比例[m
+[32m+[m[32m                                    .withMaxResultSize([m
+[32m+[m[32m                                            5000, 5000)[m
+[32m+[m[32m                                    .start(MainActivity.this, UCrop.REQUEST_CROP);[m
+[32m+[m[32m                        }[m
+[32m+[m[32m                    }.start();[m
+[32m+[m[32m                }[m
+[32m+[m[32m            });[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    //录像停止线程[m
+[32m+[m[32m   Runnable stopVideoRunnable=new Runnable() {[m
+         @Override[m
+         public void run() {[m
+[31m-            //更新界面[m
+[31m-          //  holderView.setImageBitmap(bitmap);[m
+[32m+[m[32m            //如果正在录像[m
+[32m+[m[32m            if (capturingVideo) {[m
+[32m+[m[32m                //取消录像许可[m
+[32m+[m[32m                pendingVideoCapture = false;[m
+[32m+[m[32m                //录像标志设为停止[m
+[32m+[m[32m                capturingVideo = false;[m
+[32m+[m[32m                videoTextView.setVisibility(View.GONE);[m
+[32m+[m[32m                captureButton.setVisibility(View.VISIBLE);[m
+[32m+[m[32m                progressButton.setVisibility(View.GONE);[m
+[32m+[m[32m                //设置倒计时UI标志为false[m
+[32m+[m[32m                isRun = false;[m
+[32m+[m[32m                //停止更新倒计时UI[m
+[32m+[m[32m                handler.post(runnableUi);[m
+[32m+[m[32m                //停止录像[m
+[32m+[m[32m                camera.stopVideo();[m
+[32m+[m[32m                //设置对焦方式[m
+[32m+[m[32m                camera.setFocus(CameraKit.Constants.FOCUS_TAP);[m
+[32m+[m
+[32m+[m[32m            }[m
+[32m+[m
+ [m
+         }[m
+[32m+[m[32m    };[m
+[32m+[m
+[32m+[m
+[32m+[m[32m//更新倒计时线程[m
+[32m+[m[32m    Runnable runnableUi=new  Runnable() {[m
+[32m+[m[32m        @Override[m
+[32m+[m[32m        public void run() {[m
+[32m+[m[32m            if(isRun){[m
+[32m+[m[32m                //倒计时秒速[m
+[32m+[m[32m                recLen= (float) (recLen-0.1);[m
+[32m+[m[32m                //圆形按钮进度 以1为单位[m
+[32m+[m[32m                progress++;[m
+[32m+[m[32m                //更新倒计时[m
+[32m+[m[32m                if(recLen<10){[m
+[32m+[m[32m                    videoTextView.setText("00:0" + (int)recLen);[m
+[32m+[m[32m                }else{[m
+[32m+[m[32m                    videoTextView.setText("00:" + (int)recLen);[m
+[32m+[m[32m                }[m
+[32m+[m[32m                //更新圆形按钮进度[m
+[32m+[m[32m                progressButton.download((int) progress);[m
+[32m+[m[32m                if (recLen > 0) {[m
+[32m+[m[32m                    handler.postDelayed(runnableUi, 100);[m
+[32m+[m[32m                }[m
+[32m+[m[32m            }else{[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            }[m
+ [m
+[32m+[m[32m            }[m
+     };[m
+[31m-*/[m
+[32m+[m
+ [m
+     @Override[m
+     protected void onResume() {[m
+[36m@@ -311,45 +337,29 @@[m [mpublic class MainActivity extends AppCompatActivity {[m
+        camera.stop();[m
+         super.onPause();[m
+     }[m
+[31m-    @Override[m
+[31m-    public boolean dispatchTouchEvent(MotionEvent ev) {[m
+[31m-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {[m
+ [m
+[31m-            if (isFastDoubleClick()) {[m
+[31m-                return true;[m
+[31m-            }[m
+[31m-        }[m
+[31m-[m
+[31m-        return super.dispatchTouchEvent(ev);[m
+[31m-    }[m
+[31m-    long lastClickTime;[m
+[31m-    public  boolean isFastDoubleClick() {[m
+[31m-        long time = System.currentTimeMillis();[m
+[31m-        long timeD = time - lastClickTime;[m
+[31m-        if ( 0 < timeD && timeD < 500) {[m
+[31m-            return true;[m
+[31m-        }[m
+[31m-        lastClickTime = time;[m
+[31m-        return false;[m
+[31m-    }[m
+ [m
+     @Override[m
+     protected void onActivityResult(int requestCode, int resultCode, Intent data) {[m
+         super.onActivityResult(requestCode, resultCode, data);[m
+         if (resultCode == RESULT_OK) {[m
+[31m-            switch (requestCode) {[m
+[31m-                case PictureConfig.CHOOSE_REQUEST:[m
+ [m
+[32m+[m[32m            switch (requestCode) {[m
+ [m
+[32m+[m[32m                case PictureConfig.CHOOSE_REQUEST:[m
+[32m+[m[32m                    //选中图片的List[m
+                    selectList = PictureSelector.obtainMultipleResult(data);[m
+[31m-                    String imgPath=null;[m
+[32m+[m[32m                   String imgPath = new String();[m
+                   for (int i=0;i<selectList.size();i++){[m
+                   imgPath += selectList.get(i).getPath();[m
+[31m-                                }[m
+[32m+[m[32m                  }[m
+                     Toast.makeText(MainActivity.this,imgPath,Toast.LENGTH_LONG).show();[m
+                     break;[m
+[32m+[m
+[32m+[m
+                 case UCrop.REQUEST_CROP:[m
+                     holderView.setImageURI(UCrop.getOutput(data));[m
+[32m+[m[32m                    //获取保存路径[m
+                     saveFile = new File(Environment.getExternalStorageDirectory() + "/DCIM/Camera/", timeStamp + ".jpg");[m
+                     //更新相册[m
+                     try {[m
+[36m@@ -358,11 +368,10 @@[m [mpublic class MainActivity extends AppCompatActivity {[m
+                     } catch (FileNotFoundException e) {[m
+                         e.printStackTrace();[m
+                     }[m
+[32m+[m[32m                    //广播扫描刚保存的文件[m
+                     broadcastIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(saveFile));[m
+                     sendBroadcast(broadcastIntent);[m
+                     break;[m
+[31m-[m
+[31m-[m
+             }[m
+ [m
+ [m
+[1mdiff --git a/CameraRC2/app/src/main/res/drawable/capture_button.xml b/CameraRC2/app/src/main/res/drawable/capture_button.xml[m
+[1mindex d5a4f5b..e206b62 100644[m
+[1m--- a/CameraRC2/app/src/main/res/drawable/capture_button.xml[m
+[1m+++ b/CameraRC2/app/src/main/res/drawable/capture_button.xml[m
+[36m@@ -2,10 +2,10 @@[m
+ <layer-list xmlns:android="http://schemas.android.com/apk/res/android">[m
+     <item>[m
+         <shape android:shape="oval">[m
+[31m-            <solid android:color="#EEFFFFFF" />[m
+[32m+[m[32m            <solid android:color="#999999" />[m
+             <size[m
+[31m-                android:width="15dp"[m
+[31m-                android:height="15dp" />[m
+[32m+[m[32m                android:width="19dp"[m
+[32m+[m[32m                android:height="19dp" />[m
+         </shape>[m
+     </item>[m
+     <item>[m
+[36m@@ -22,9 +22,9 @@[m
+     <item>[m
+         <shape android:shape="oval">[m
+             <stroke[m
+[31m-                android:width="5dp"[m
+[31m-                android:color="@android:color/transparent" />[m
+[31m-            <solid android:color="#AAFFFFFF" />[m
+[32m+[m[32m                android:width="2dp"[m
+[32m+[m[32m                android:color="#FFFFFF" />[m
+[32m+[m[32m            <solid android:color="#00CC99" />[m
+             <size[m
+                 android:width="12dp"[m
+                 android:height="12dp" />[m
+[1mdiff --git a/CameraRC2/app/src/main/res/layout/activity_main.xml b/CameraRC2/app/src/main/res/layout/activity_main.xml[m
+[1mindex 6df9508..3cebf15 100644[m
+[1m--- a/CameraRC2/app/src/main/res/layout/activity_main.xml[m
+[1m+++ b/CameraRC2/app/src/main/res/layout/activity_main.xml[m
+[36m@@ -9,6 +9,7 @@[m
+ [m
+     >[m
+ [m
+[32m+[m
+     <FrameLayout[m
+         android:layout_width="match_parent"[m
+         android:layout_height="match_parent">[m
+[36m@@ -17,19 +18,16 @@[m
+             android:id="@+id/camera"[m
+             android:layout_width="match_parent"[m
+             android:layout_height="match_parent"[m
+[31m-[m
+             app:ckCropOutput="false"[m
+[31m-[m
+[31m-[m
+             android:adjustViewBounds="true"[m
+             app:ckFlash="off"[m
+[31m-            app:ckFocus="tapWithMarker"[m
+[32m+[m[32m            app:ckFocus="tap"[m
+             app:ckJpegQuality="100"[m
+             app:ckMethod="standard"[m
+             app:ckVideoQuality="max720p">[m
+[31m-[m
+         </com.wonderkiln.camerakit.CameraView>[m
+ [m
+[32m+[m
+     </FrameLayout>[m
+ [m
+ [m
+[36m@@ -42,30 +40,76 @@[m
+ [m
+ [m
+         >[m
+[32m+[m[32m        <TextView[m
+[32m+[m[32m            android:id="@+id/videoTextView"[m
+[32m+[m[32m            android:layout_width="wrap_content"[m
+[32m+[m[32m            android:layout_height="wrap_content"[m
+[32m+[m[32m            app:layout_constraintTop_toTopOf="parent"[m
+[32m+[m[32m            app:layout_constraintLeft_toLeftOf="parent"[m
+[32m+[m[32m            app:layout_constraintRight_toRightOf="parent"[m
+[32m+[m[32m            android:text="00:10"[m
+ [m
+[32m+[m[32m            android:visibility="gone"/>[m
+[32m+[m[32m        <TextView[m
+[32m+[m[32m            android:id="@+id/textView"[m
+[32m+[m[32m            android:layout_width="wrap_content"[m
+[32m+[m[32m            android:layout_height="wrap_content"[m
+[32m+[m[32m            app:layout_constraintBottom_toTopOf="@+id/captureButton"[m
+[32m+[m[32m            app:layout_constraintLeft_toLeftOf="parent"[m
+[32m+[m[32m            app:layout_constraintRight_toRightOf="parent"[m
+[32m+[m[32m            android:text="轻触拍照，长按录像" />[m
+ [m
+         <ImageView[m
+             android:id="@+id/holderView"[m
+             android:layout_width="wrap_content"[m
+[31m-            android:layout_height="match_parent"[m
+[32m+[m[32m            android:layout_height="wrap_content"[m
+[32m+[m[32m            android:padding="2dp"[m
+[32m+[m
+[32m+[m[32m            android:maxWidth="100dp"[m
+[32m+[m[32m            android:maxHeight="100dp"[m
+             android:layout_marginTop="8dp"[m
+[31m-             android:adjustViewBounds="true"[m
+[32m+[m[32m            android:adjustViewBounds="true"[m
+             android:src="@mipmap/ic_launcher"[m
+[32m+[m[32m            android:background="#FFFFFF"[m
+[32m+[m
+             app:layout_constraintBottom_toBottomOf="parent"[m
+             app:layout_constraintTop_toTopOf="parent"[m
+             app:layout_constraintLeft_toLeftOf="parent"[m
+[31m-            app:layout_constraintRight_toRightOf="@+id/captureButton"/>[m
+[32m+[m[32m            app:layout_constraintRight_toRightOf="@id/captureButton"[m
+[32m+[m[32m            />[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m[32m        <com.jiang.android.pbutton.CProgressButton[m
+[32m+[m[32m            android:layout_width="80dp"[m
+[32m+[m[32m            android:layout_height="80dp"[m
+[32m+[m
+[32m+[m[32m            android:gravity="center"[m
+[32m+[m[32m            app:stroke_width="2dp"[m
+[32m+[m[32m            app:radius="40dp"[m
+[32m+[m[32m            app:color="@color/colorAccent"[m
+[32m+[m[32m            app:drawable_xml="@drawable/bounder"[m
+[32m+[m[32m            android:textSize="12sp"[m
+[32m+[m[32m            android:textColor="@color/colorAccent"[m
+[32m+[m[32m            android:id="@+id/btn"[m
+[32m+[m[32m            app:layout_constraintBottom_toBottomOf="parent"[m
+[32m+[m[32m            app:layout_constraintLeft_toLeftOf="parent"[m
+[32m+[m[32m            app:layout_constraintRight_toRightOf="parent"[m
+[32m+[m[32m            app:layout_constraintTop_toTopOf="parent"[m
+[32m+[m[32m            android:visibility="gone"[m
+[32m+[m[32m            />[m
+ [m
+ [m
+         <ImageView[m
+             android:id="@+id/captureButton"[m
+[31m-            android:layout_width="66dp"[m
+[31m-            android:layout_height="66dp"[m
+[32m+[m[32m            android:layout_width="80dp"[m
+[32m+[m[32m            android:layout_height="80dp"[m
+             android:src="@drawable/capture_button"[m
+[32m+[m[32m            android:adjustViewBounds="true"[m
+             app:layout_constraintBottom_toBottomOf="parent"[m
+             app:layout_constraintLeft_toLeftOf="parent"[m
+             app:layout_constraintRight_toRightOf="parent"[m
+[31m-[m
+             app:layout_constraintTop_toTopOf="parent" />[m
+ [m
+     </android.support.constraint.ConstraintLayout>[m
