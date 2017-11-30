@@ -35,6 +35,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+
+        floatingFrameLayout=(FrameLayout)findViewById(R.id.floatingAlbum);
+
         toEmpty=(Button)findViewById(R.id.toEmpty);
         toEmpty.setOnClickListener(this);
         toCamera=(Button)findViewById(R.id.toCamera);
@@ -53,19 +56,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 replaceFragment(new EmptyFragment());
 
+
                 break;
 
             case R.id.toCamera:
                 replaceFragment(new CameraFragment());
+
                 break;
 
             case R.id.toAlbum:
 
                 replaceFragment(new AlbumFragment());
 
+
                 break;
             case R.id.clearFloat:
-                floatingFrameLayout=(FrameLayout)findViewById(R.id.floatingAlbum);
+
 
 
                 floatingFrameLayout.setVisibility(View.GONE);
@@ -76,10 +82,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
     private void replaceFragment(Fragment fragment) {
-        FragmentManager fragmentManager=getSupportFragmentManager();
-        FragmentTransaction transaction=fragmentManager.beginTransaction();
-        transaction.replace(R.id.Fragment,fragment );
-        transaction.commit();
+
+        floatingFrameLayout.setVisibility(View.GONE);
+        getSupportFragmentManager().beginTransaction().replace(R.id.Fragment,fragment).commit();
+
+
     }
 
 

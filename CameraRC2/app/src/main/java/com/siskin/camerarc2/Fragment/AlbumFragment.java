@@ -5,12 +5,12 @@ import android.os.Bundle;
 
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 
 import com.bilibili.boxing.Boxing;
@@ -39,65 +39,52 @@ public class AlbumFragment extends Fragment {
     public String mPath;
     private FrameLayout floatingAlbum;
 
-
-
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
 
         view=inflater.inflate(R.layout.album_fragment,container,false);
         return view;
-
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
         BoxingMediaLoader.getInstance().init(new BoxingGlideLoader());
-        final BlankFragment fragment = new BlankFragment();
+        final CustomAlbumFragment fragment = new CustomAlbumFragment();
        final  FloatingAlbumFragment floatingAlbumFragment=new FloatingAlbumFragment();
-        BoxingConfig singleImgConfig = new BoxingConfig(BoxingConfig.Mode.MULTI_IMG)
-                .withMediaPlaceHolderRes(R.drawable.ic_boxing_default_image).withAlbumPlaceHolderRes(R.drawable.ic_boxing_default_image);
-        Boxing.of(singleImgConfig).setupFragment(fragment, new Boxing.OnBoxingFinishListener() {
+        BoxingConfig multiImgConfig = new BoxingConfig(BoxingConfig.Mode.MULTI_IMG)
+                .withMediaPlaceHolderRes(R.drawable.ic_boxing_default_image).withMaxCount(20).withAlbumPlaceHolderRes(R.drawable.ic_boxing_default_image);
+        Boxing.of(multiImgConfig).setupFragment(fragment, new Boxing.OnBoxingFinishListener() {
 
             @Override
             public void onBoxingFinish(Intent intent, List<BaseMedia> medias) {
 
-
-
                 if (medias != null && medias.size() > 0) {
 
-
-
+                    /*
                     path="";
-                    //   ImageView holderView=getActivity().findViewById(R.id.holderView);
                     for(int i=0;i<medias.size();i++){
                         BaseMedia media = mMedia = medias.get(i);
                         path += media.getPath();
                     }
-
+*/
 
                     Bundle bundle=new Bundle();
-                    //bundle.putParcelable("List", (Parcelable) medias);
                     bundle.putSerializable("medias", (Serializable) medias);
                     floatingAlbumFragment.setArguments(bundle);
 
 
-                    Toast.makeText(getActivity(),"path:"+path,Toast.LENGTH_LONG).show();
+                    //Toast.makeText(getActivity(),"path:"+path,Toast.LENGTH_LONG).show();
                     floatingAlbum = (FrameLayout) getActivity().findViewById(R.id.floatingAlbum);
 
+                    FragmentTransaction transaction=getActivity().getSupportFragmentManager().beginTransaction();
+                    //transaction.show(floatingAlbumFragment);
                     floatingAlbum.setVisibility(View.VISIBLE);
                     if(!floatingAlbumFragment.isAdded()){
-
-                        getActivity().getSupportFragmentManager().beginTransaction()
-                                .add(R.id.floatingAlbum,floatingAlbumFragment).commit();
-
+                    transaction.replace(R.id.floatingAlbum,floatingAlbumFragment).commit();
                     }else{
-                        floatingAlbumFragment.refresh();
+                        floatingAlbumFragment.reFresh();
                     }
-
 
                     //   BoxingMediaLoader.getInstance().displayRaw(holderView, path, 1080, 720, null);
                 }
@@ -105,7 +92,7 @@ public class AlbumFragment extends Fragment {
             }
         });
         getActivity().getSupportFragmentManager().beginTransaction()
-                .add(R.id.Fragment, fragment, BlankFragment.TAG).commit();
+                .add(R.id.Fragment, fragment, CustomAlbumFragment.TAG).commit();
 
 
     }

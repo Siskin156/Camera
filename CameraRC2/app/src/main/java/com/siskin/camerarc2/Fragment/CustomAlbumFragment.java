@@ -29,7 +29,6 @@ import com.bilibili.boxing.model.config.BoxingConfig;
 import com.bilibili.boxing.model.entity.AlbumEntity;
 import com.bilibili.boxing.model.entity.BaseMedia;
 import com.bilibili.boxing.model.entity.impl.ImageMedia;
-import com.bilibili.boxing_impl.ui.BoxingViewFragment;
 import  com.siskin.camerarc2.R;
 import com.bilibili.boxing_impl.WindowManagerHelper;
 import com.bilibili.boxing_impl.adapter.BoxingAlbumAdapter;
@@ -38,12 +37,13 @@ import com.bilibili.boxing_impl.ui.BoxingViewActivity;
 import com.bilibili.boxing_impl.view.MediaItemLayout;
 import com.bilibili.boxing_impl.view.SpacesItemDecoration;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class BlankFragment extends AbsBoxingViewFragment implements View.OnClickListener {
-    public static final String TAG = "BlankFragment";
+public class CustomAlbumFragment extends AbsBoxingViewFragment implements View.OnClickListener {
+    public static final String TAG = "CustomAlbumFragment";
     private static final int IMAGE_PREVIEW_REQUEST_CODE = 9086;
     private static final int IMAGE_CROP_REQUEST_CODE = 9087;
 
@@ -51,7 +51,9 @@ public class BlankFragment extends AbsBoxingViewFragment implements View.OnClick
 
     private boolean mIsPreview;
     private boolean mIsCamera;
+    private  View view;
 
+    private Button mDelBtn;
     private Button mPreBtn;
     private Button mOkBtn;
     private RecyclerView mRecycleView;
@@ -107,7 +109,9 @@ public class BlankFragment extends AbsBoxingViewFragment implements View.OnClick
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragmant_boxing_view, container, false);
+
+        view= inflater.inflate(R.layout.fragmant_boxing_view, container, false);
+         return view;
     }
 
     @Override
@@ -128,9 +132,11 @@ public class BlankFragment extends AbsBoxingViewFragment implements View.OnClick
         if (isMultiImageMode) {
             mPreBtn = (Button) view.findViewById(R.id.choose_preview_btn);
             mOkBtn = (Button) view.findViewById(R.id.choose_ok_btn);
+            mDelBtn=(Button)view.findViewById(R.id.choose_delete_btn);
 
             mPreBtn.setOnClickListener(this);
             mOkBtn.setOnClickListener(this);
+            mDelBtn.setOnClickListener(this);
             updateMultiPickerLayoutState(mMediaAdapter.getSelectedMedias());
         }
     }
@@ -140,11 +146,11 @@ public class BlankFragment extends AbsBoxingViewFragment implements View.OnClick
         gridLayoutManager.setSmoothScrollbarEnabled(true);
         mRecycleView.setLayoutManager(gridLayoutManager);
         mRecycleView.addItemDecoration(new SpacesItemDecoration(getResources().getDimensionPixelOffset(com.bilibili.boxing_impl.R.dimen.boxing_media_margin), GRID_COUNT));
-       // mMediaAdapter.setOnCameraClickListener(new com.siskin.camerarc2.Fragment.BlankFragment.OnCameraClickListener());
-        mMediaAdapter.setOnCheckedListener(new com.siskin.camerarc2.Fragment.BlankFragment.OnMediaCheckedListener());
-        mMediaAdapter.setOnMediaClickListener(new com.siskin.camerarc2.Fragment.BlankFragment.OnMediaClickListener());
+       // mMediaAdapter.setOnCameraClickListener(new com.siskin.camerarc2.Fragment.CustomAlbumFragment.OnCameraClickListener());
+        mMediaAdapter.setOnCheckedListener(new CustomAlbumFragment.OnMediaCheckedListener());
+        mMediaAdapter.setOnMediaClickListener(new CustomAlbumFragment.OnMediaClickListener());
         mRecycleView.setAdapter(mMediaAdapter);
-        mRecycleView.addOnScrollListener(new com.siskin.camerarc2.Fragment.BlankFragment.ScrollListener());
+        mRecycleView.addOnScrollListener(new CustomAlbumFragment.ScrollListener());
     }
 
     @Override
@@ -249,13 +255,46 @@ public class BlankFragment extends AbsBoxingViewFragment implements View.OnClick
             if (!mIsPreview) {
                 mIsPreview = true;
                 ArrayList<BaseMedia> medias = (ArrayList<BaseMedia>) mMediaAdapter.getSelectedMedias();
+
                 Boxing.get().withIntent(getActivity(), BoxingViewActivity.class, medias)
-                        .start(this, com.siskin.camerarc2.Fragment.BlankFragment.IMAGE_PREVIEW_REQUEST_CODE, BoxingConfig.ViewMode.PRE_EDIT);
+                        .start(this, CustomAlbumFragment.IMAGE_PREVIEW_REQUEST_CODE, BoxingConfig.ViewMode.PRE_EDIT);
 
             }
         }
+        else if(id==R.id.choose_delete_btn){
+            ArrayList<BaseMedia> medias = (ArrayList<BaseMedia>) mMediaAdapter.getSelectedMedias();
+
+            if( !medias.isEmpty()){
+
+
+                for(int i=0;i<medias.size();i++){
+                    BaseMedia media  = medias.get(i);
+                    File delFile=new File(media.getPath());
+
+                    delFile.delete();
+
+                }
+
+                medias.clear();
+                //updateOkBtnState(medias);
+
+
+
+
+            }
+            else{
+                Toast.makeText(getContext(),"请选择",Toast.LENGTH_SHORT).show();
+            }
+
+
+
+
+
+        }
 
     }
+
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -354,7 +393,7 @@ public class BlankFragment extends AbsBoxingViewFragment implements View.OnClick
                         dismissAlbumWindow();
                     }
                 });
-                mAlbumWindowAdapter.setAlbumOnClickListener(new com.siskin.camerarc2.Fragment.BlankFragment.OnAlbumItemOnClickListener());
+                mAlbumWindowAdapter.setAlbumOnClickListener(new CustomAlbumFragment.OnAlbumItemOnClickListener());
                 recyclerView.setAdapter(mAlbumWindowAdapter);
                 return view;
             }
@@ -414,17 +453,18 @@ public class BlankFragment extends AbsBoxingViewFragment implements View.OnClick
                 ArrayList<BaseMedia> medias = (ArrayList<BaseMedia>) mMediaAdapter.getSelectedMedias();
 
 
-
-                Boxing.get().withIntent(getContext(), BoxingViewActivity.class, medias, pos, albumId)
-                        .start(com.siskin.camerarc2.Fragment.BlankFragment.this,IMAGE_PREVIEW_REQUEST_CODE, BoxingConfig.ViewMode.EDIT);
-
 /*
+                Boxing.get().withIntent(getContext(), BoxingViewActivity.class, medias, pos, albumId)
+                        .start(com.siskin.camerarc2.Fragment.CustomAlbumFragment.this,IMAGE_PREVIEW_REQUEST_CODE, BoxingConfig.ViewMode.EDIT);
+
+
                 BoxingViewFragment fragment=new BoxingViewFragment();
                 fragment.showAlbum((List<AlbumEntity>) albumMedia);
                 getActivity().getSupportFragmentManager().beginTransaction()
-                        .add(R.id.Fragment, fragment, BlankFragment.TAG).commit();
-*/
+                        .add(R.id.Fragment, fragment, CustomAlbumFragment.TAG).commit();
+
                 Toast.makeText(getActivity(),"预览动作？",Toast.LENGTH_SHORT).show();
+  */
             }
         }
 

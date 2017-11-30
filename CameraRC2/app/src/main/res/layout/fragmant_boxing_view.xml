@@ -25,7 +25,7 @@
     <FrameLayout
         android:id="@+id/multi_picker_layout"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="35dp"
         android:background="@color/boxing_white">
 
         <Button
@@ -37,7 +37,20 @@
             android:background="@drawable/selector_boxing_btn_solid"
             android:text="@string/boxing_preview"
             android:textAppearance="@style/Boxing.TextAppearance.App.Medium"
-            android:textColor="@color/boxing_white"/>
+            android:textColor="@color/boxing_white"
+            android:visibility="gone"/>
+        <Button
+            android:id="@+id/choose_delete_btn"
+            android:layout_width="60dp"
+            android:layout_height="30dp"
+            android:layout_gravity="left|center_vertical"
+            android:layout_marginLeft="@dimen/boxing_item_spacing"
+            android:background="@drawable/selector_boxing_btn_solid"
+            android:text="删除"
+            android:textAppearance="@style/Boxing.TextAppearance.App.Medium"
+            android:textColor="@color/boxing_white"
+            />
+
 
         <Button
             android:id="@+id/choose_ok_btn"
