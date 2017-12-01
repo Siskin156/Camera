@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#80FFFFFF"
+    android:background="#80808080"
     tools:context="com.siskin.camerarc2.Fragment.FloatingAlbumFragment">
 
     <!-- TODO: Update blank fragment layout -->
@@ -12,7 +12,8 @@
     <ImageView
         android:id="@+id/floatingAlbum_photo"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintVertical_weight="3"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -21,7 +22,8 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/id_recyclerview_horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintVertical_weight="1"
         android:layout_centerVertical="true"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"

@@ -297,11 +297,11 @@ public class CameraFragment extends Fragment {
                                 e.printStackTrace();
                             } catch (IOException e) {
                                 e.printStackTrace();
-                            } finally {
-                                try {
+                            }
+                            try {
                                     MediaStore.Images.Media.insertImage(getActivity().getContentResolver(),
                                             dir.getAbsolutePath(), timeStamp + ".jpg", null);
-                                } catch (FileNotFoundException e) {
+                            } catch (FileNotFoundException e) {
                                     e.printStackTrace();
                                 }
                                 //广播扫描刚保存的文件
@@ -310,7 +310,7 @@ public class CameraFragment extends Fragment {
 
                                 handler.post(upDateIv);
 
-                            }
+
 
  /*
                             //获得保存路径的URI

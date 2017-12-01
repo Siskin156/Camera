@@ -13,6 +13,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,9 +31,10 @@ import com.bilibili.boxing.model.entity.AlbumEntity;
 import com.bilibili.boxing.model.entity.BaseMedia;
 import com.bilibili.boxing.model.entity.impl.ImageMedia;
 import  com.siskin.camerarc2.R;
+import  com.siskin.camerarc2.adapter.BoxingMediaAdapter;
+import  com.siskin.camerarc2.adapter.BoxingAlbumAdapter;
 import com.bilibili.boxing_impl.WindowManagerHelper;
-import com.bilibili.boxing_impl.adapter.BoxingAlbumAdapter;
-import com.bilibili.boxing_impl.adapter.BoxingMediaAdapter;
+
 import com.bilibili.boxing_impl.ui.BoxingViewActivity;
 import com.bilibili.boxing_impl.view.MediaItemLayout;
 import com.bilibili.boxing_impl.view.SpacesItemDecoration;
@@ -263,20 +265,40 @@ public class CustomAlbumFragment extends AbsBoxingViewFragment implements View.O
         }
         else if(id==R.id.choose_delete_btn){
             ArrayList<BaseMedia> medias = (ArrayList<BaseMedia>) mMediaAdapter.getSelectedMedias();
+            ArrayList<BaseMedia> mediapos=(ArrayList<BaseMedia>) mMediaAdapter.getAllMedias();
+
+
+
+
 
             if( !medias.isEmpty()){
 
 
+
                 for(int i=0;i<medias.size();i++){
+
                     BaseMedia media  = medias.get(i);
+                    int pos =mediapos.indexOf(media);
+
+                    Log.d(i+"--------",String.valueOf(pos));
+
                     File delFile=new File(media.getPath());
 
-                    delFile.delete();
+                   delFile.delete();
+                    mediapos.remove(pos);
+                  mMediaAdapter.notifyItemRemoved(pos);
+                  mMediaAdapter.notifyItemRangeChanged(pos,getMaxCount());
 
                 }
 
+
+
+
                 medias.clear();
-                //updateOkBtnState(medias);
+                updateMultiPickerLayoutState(medias);
+                updateOkBtnState(medias);
+
+
 
 
 
@@ -446,6 +468,7 @@ public class CustomAlbumFragment extends AbsBoxingViewFragment implements View.O
 
         private void multiImageClick(int pos) {
             if (!mIsPreview) {
+                /*
                 AlbumEntity albumMedia = mAlbumWindowAdapter.getCurrentAlbum();
                 String albumId = albumMedia != null ? albumMedia.mBucketId : AlbumEntity.DEFAULT_NAME;
                 mIsPreview = true;
@@ -453,18 +476,14 @@ public class CustomAlbumFragment extends AbsBoxingViewFragment implements View.O
                 ArrayList<BaseMedia> medias = (ArrayList<BaseMedia>) mMediaAdapter.getSelectedMedias();
 
 
-/*
+
                 Boxing.get().withIntent(getContext(), BoxingViewActivity.class, medias, pos, albumId)
                         .start(com.siskin.camerarc2.Fragment.CustomAlbumFragment.this,IMAGE_PREVIEW_REQUEST_CODE, BoxingConfig.ViewMode.EDIT);
 
 
-                BoxingViewFragment fragment=new BoxingViewFragment();
-                fragment.showAlbum((List<AlbumEntity>) albumMedia);
-                getActivity().getSupportFragmentManager().beginTransaction()
-                        .add(R.id.Fragment, fragment, CustomAlbumFragment.TAG).commit();
 
-                Toast.makeText(getActivity(),"预览动作？",Toast.LENGTH_SHORT).show();
-  */
+                Toast.makeText(getActivity(),"预览动作？"+String.valueOf(pos),Toast.LENGTH_SHORT).show();
+*/
             }
         }
 
@@ -483,17 +502,23 @@ public class CustomAlbumFragment extends AbsBoxingViewFragment implements View.O
 
 
 
-    private class OnMediaCheckedListener implements BoxingMediaAdapter.OnMediaCheckedListener {
+    private class OnMediaCheckedListener implements BoxingMediaAdapter.OnMediaCheckedListener{
 
         @Override
         public void onChecked(View view, BaseMedia iMedia) {
+
             if (!(iMedia instanceof ImageMedia)) {
                 return;
             }
+
             ImageMedia photoMedia = (ImageMedia) iMedia;
+
+
+
             boolean isSelected = !photoMedia.isSelected();
             MediaItemLayout layout = (MediaItemLayout) view;
             List<BaseMedia> selectedMedias = mMediaAdapter.getSelectedMedias();
+
             if (isSelected) {
                 if (selectedMedias.size() >= mMaxCount) {
                     String warning = getString(com.bilibili.boxing_impl.R.string.boxing_too_many_picture_fmt, mMaxCount);
@@ -506,26 +531,33 @@ public class CustomAlbumFragment extends AbsBoxingViewFragment implements View.O
                         return;
                     }
                     selectedMedias.add(photoMedia);
+
                 }
             } else {
                 if (selectedMedias.size() >= 1 && selectedMedias.contains(photoMedia)) {
                     selectedMedias.remove(photoMedia);
                 }
             }
+
             photoMedia.setSelected(isSelected);
             layout.setChecked(isSelected);
             updateMultiPickerLayoutState(selectedMedias);
         }
+
+
     }
 
     private class OnAlbumItemOnClickListener implements BoxingAlbumAdapter.OnAlbumClickListener {
 
         @Override
         public void onClick(View view, int pos) {
+
+
             BoxingAlbumAdapter adapter = mAlbumWindowAdapter;
             if (adapter != null && adapter.getCurrentAlbumPos() != pos) {
                 List<AlbumEntity> albums = adapter.getAlums();
                 adapter.setCurrentAlbumPos(pos);
+
 
                 AlbumEntity albumMedia = albums.get(pos);
                 loadMedias(0, albumMedia.mBucketId);

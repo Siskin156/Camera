@@ -28,13 +28,12 @@ public class FloatingAlbumFragment extends Fragment {
     private TextView floatingAlbum;
     private List<BaseMedia> medias;
     private BaseMedia mMedia;
-    private String path;
     private ImageView floatingAlbum_photo;
 
     private RecyclerView mRecyclerView;
     private GalleryAdapter mAdapter;
-    private List<BaseMedia> mDatas;
-    private View currentView;
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -73,7 +72,7 @@ public class FloatingAlbumFragment extends Fragment {
             @Override
             public void onItemClick(View view, int position) {
                 Glide.with(getContext()).load(medias.get(position).getPath()).into(floatingAlbum_photo);
-                //Toast.makeText(getContext(),medias.get(position).getPath(),Toast.LENGTH_SHORT).show();
+
             }
         });
 

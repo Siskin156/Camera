@@ -21,7 +21,9 @@
                 app:ckFocus="tap"
                 app:ckJpegQuality="100"
                 app:ckMethod="standard"
-                app:ckVideoQuality="max720p">
+                app:ckVideoQuality="max720p"
+                app:ckPermissions="lazy">
+
             </com.wonderkiln.camerakit.CameraView>
 
 
@@ -58,12 +60,11 @@
 
             <ImageView
                 android:id="@+id/holderView"
-                android:layout_width="wrap_content"
+                android:layout_width="160dp"
                 android:layout_height="wrap_content"
                 android:padding="2dp"
 
-                android:maxWidth="100dp"
-                android:maxHeight="100dp"
+
                 android:layout_marginTop="8dp"
                 android:adjustViewBounds="true"
                 android:src="@mipmap/ic_launcher"
