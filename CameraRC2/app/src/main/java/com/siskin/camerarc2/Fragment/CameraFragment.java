@@ -214,6 +214,8 @@ public class CameraFragment extends Fragment {
                     isImage = false;
                     //正在录像
                     capturingVideo = true;
+                    //延迟11.6s结束录像
+                    handler.postDelayed(stopVideoRunnable, 10600);
                     //录像结束后的回调
                     camera.captureVideo(new CameraKitEventCallback<CameraKitVideo>() {
                         @Override
@@ -227,12 +229,13 @@ public class CameraFragment extends Fragment {
             }
         }, 600);
 
-        //延迟11.6s结束录像
-        handler.postDelayed(stopVideoRunnable, 11600);
+
     }
 
     //拍照按钮弹起事件
     private void actionUP() {
+        //移除或许还在运行的延迟停止录像进程
+        handler.removeCallbacks(stopVideoRunnable);
         //如果进行了录像
         if (capturingVideo) {
             //取消录像准备
@@ -245,8 +248,7 @@ public class CameraFragment extends Fragment {
             //取消更新倒计时ui
             isRun = false;
             handler.post(runnableUi);
-            //移除或许还在运行的延迟停止录像进程
-            handler.removeCallbacks(stopVideoRunnable);
+
             //停止录像
             camera.stopVideo();
             //设置对焦
